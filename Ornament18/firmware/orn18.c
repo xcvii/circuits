@@ -64,11 +64,6 @@ void sleep_helper(int schedule_wakeup)
             | (0<<WDP3) | (0<<WDP2) | (0<<WDP1) | (1<<WDP0) // 32ms
             ;
         wdt_reset();
-        sei();
-    }
-    else
-    {
-        cli();
     }
 
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
@@ -86,7 +81,6 @@ void sleep(void)
 void wakeup(void)
 {
     sleep_disable();
-    cli();
 
     wdt_reset();
     WDTCR = (1<<WDCE) | (0<<WDTIE); // stopped
@@ -101,8 +95,6 @@ ISR(WDT_vect)
 
 void init(void)
 {
-    cli();
-
     power_adc_disable();
     ADCSRA &= ~(1<<ADEN); // disable ADC
     ACSR |= (1<<ACD); // disable analog comparator
@@ -110,6 +102,8 @@ void init(void)
     // no input/floating pins
     DDRB = (1<<PB4) | (1<<PB3) | (1<<PB2) | (1<<PB1) | (1<<PB0);
     PORTB = 0;
+
+    sei();
 }
 
 
