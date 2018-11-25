@@ -1,7 +1,10 @@
-#include <avr/io.h>
+#include <stdbool.h>
+
 #include <util/delay.h>
-#include <avr/power.h>
+
 #include <avr/interrupt.h>
+#include <avr/io.h>
+#include <avr/power.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 
@@ -54,7 +57,7 @@ void set_pwm(int16_t intensity)
 }
 
 
-void sleep_helper(int schedule_wakeup)
+void sleep_helper(bool schedule_wakeup)
 {
     if (schedule_wakeup)
     {
@@ -74,7 +77,7 @@ void sleep_helper(int schedule_wakeup)
 
 void sleep(void)
 {
-    sleep_helper(1);
+    sleep_helper(true);
 }
 
 
@@ -109,7 +112,7 @@ void init(void)
 
 void shutdown(void)
 {
-    sleep_helper(0);
+    sleep_helper(false);
 }
 
 
