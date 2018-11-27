@@ -1,0 +1,12 @@
+(module Tactile_Switch_6mm_x_6mm_nosilk (layer F.Cu) (tedit 5BFDB3F5)
+  (fp_text reference SW1 (at 0 4.5) (layer F.SilkS) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value SW_Push (at 0 -4.25) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (pad 1 thru_hole circle (at -3.25 -2.25) (size 2 2) (drill 1) (layers *.Cu *.Mask))
+  (pad 2 thru_hole circle (at -3.25 2.25) (size 2 2) (drill 1) (layers *.Cu *.Mask))
+  (pad 1 thru_hole circle (at 3.25 -2.25) (size 2 2) (drill 1) (layers *.Cu *.Mask))
+  (pad 2 thru_hole circle (at 3.25 2.25) (size 2 2) (drill 1) (layers *.Cu *.Mask))
+)
