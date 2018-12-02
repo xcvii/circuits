@@ -9,6 +9,9 @@
 #include <avr/wdt.h>
 
 
+bool g_running = false;
+
+
 uint8_t LED_ADDRESS[] = {
     (0<<PB3) | (0<<PB2) | (1<<PB1),
     (0<<PB3) | (1<<PB2) | (0<<PB1),
@@ -96,6 +99,44 @@ ISR(WDT_vect)
 }
 
 
+bool is_pressed(void)
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        if ((PINB & (1<<PB4)))
+        {
+            return false;
+        }
+
+        _delay_us(800);
+    }
+
+    return true;
+}
+
+
+ISR(PCINT0_vect)
+{
+    cli();
+    stop_pwm();
+
+    if (is_pressed())
+    {
+        if ((g_running = !g_running))
+        {
+            wakeup();
+        }
+        else
+        {
+            PORTB = 0;
+        }
+    }
+
+    start_pwm();
+    sei();
+}
+
+
 void init(void)
 {
     power_adc_disable();
@@ -103,8 +144,11 @@ void init(void)
     ACSR |= (1<<ACD); // disable analog comparator
 
     // no input/floating pins
-    DDRB = (1<<PB4) | (1<<PB3) | (1<<PB2) | (1<<PB1) | (1<<PB0);
+    DDRB = (0<<PB4) | (1<<PB3) | (1<<PB2) | (1<<PB1) | (1<<PB0);
     PORTB = 0;
+
+    GIMSK = (1<<PCIE);
+    PCMSK = (1<<PCINT4);
 
     sei();
 }
@@ -141,45 +185,47 @@ int main(void)
     uint8_t current_led = 0;
     uint8_t random = 0;
 
-    // for (uint16_t j = 0; j < 20000; ++j) // run for about 3 hours
     for (;;)
     {
-        uint8_t next_led = 0;
-        do
+        while(g_running)
         {
-            random = 5 * random + 13;
-            next_led = random % 7;
+            uint8_t next_led = 0;
+            do
+            {
+                random = 5 * random + 13;
+                next_led = random % 7;
+            }
+            while (current_led == next_led);
+
+            current_led = next_led;
+            PORTB = LED_ADDRESS[current_led];
+
+            start_pwm();
+
+            int16_t pwm_intensity = 0;
+
+            for (int i = 0; i < 64; ++i)
+            {
+                pwm_intensity += 4;
+                set_pwm(pwm_intensity);
+                delay();
+            }
+
+            sleep();
+
+            for (int i = 0; i < 64; ++i)
+            {
+                pwm_intensity -= 4;
+                set_pwm(pwm_intensity);
+                delay();
+            }
+
+            stop_pwm();
+
+            sleep();
         }
-        while (current_led == next_led);
 
-        current_led = next_led;
-        PORTB = LED_ADDRESS[current_led];
-
-        start_pwm();
-
-        int16_t pwm_intensity = 0;
-
-        for (int i = 0; i < 64; ++i)
-        {
-            pwm_intensity += 4;
-            set_pwm(pwm_intensity);
-            delay();
-        }
-
-        sleep();
-
-        for (int i = 0; i < 64; ++i)
-        {
-            pwm_intensity -= 4;
-            set_pwm(pwm_intensity);
-            delay();
-        }
-
-        stop_pwm();
-
-        sleep();
+        shutdown();
     }
-
-    shutdown();
 }
 
