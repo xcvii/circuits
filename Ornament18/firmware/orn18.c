@@ -108,7 +108,7 @@ bool is_pressed(void)
             return false;
         }
 
-        _delay_us(800);
+        _delay_ms(10);
     }
 
     return true;
@@ -139,14 +139,18 @@ ISR(PCINT0_vect)
 
 void init(void)
 {
+    // disable adc and analog comparator
     power_adc_disable();
-    ADCSRA &= ~(1<<ADEN); // disable ADC
-    ACSR |= (1<<ACD); // disable analog comparator
+    ADCSRA &= ~(1<<ADEN);
+    ACSR |= (1<<ACD);
 
-    // no input/floating pins
+    // PB0: PWM
+    // PB3, PB2, PB1: LED address
+    // PB4: switch
     DDRB = (0<<PB4) | (1<<PB3) | (1<<PB2) | (1<<PB1) | (1<<PB0);
     PORTB = 0;
 
+    // enable pc interrupt on pin 4
     GIMSK = (1<<PCIE);
     PCMSK = (1<<PCINT4);
 
@@ -168,7 +172,7 @@ void delay(void)
         | (1<<CLKPS3) | (0<<CLKPS2) | (0<<CLKPS1) | (0<<CLKPS0)
         ;
 
-    _delay_us(500);
+    _delay_ms(5);
 
     // no prescaler
     CLKPR =
