@@ -19,7 +19,7 @@ uint8_t LED_ADDRESS[] = {
     (1<<PB3) | (0<<PB2) | (0<<PB1),
     (1<<PB3) | (0<<PB2) | (1<<PB1),
     (1<<PB3) | (1<<PB2) | (0<<PB1),
-    (1<<PB3) | (1<<PB2) | (1<<PB1)
+    (1<<PB3) | (1<<PB2) | (1<<PB1),
 };
 
 
@@ -103,7 +103,7 @@ bool is_pressed(void)
 {
     for (int i = 0; i < 4; ++i)
     {
-        if ((PINB & (1<<PB4)))
+        if (PINB & (1<<PB4))
         {
             return false;
         }
@@ -118,7 +118,6 @@ bool is_pressed(void)
 ISR(PCINT0_vect)
 {
     cli();
-    stop_pwm();
 
     if (is_pressed())
     {
@@ -132,25 +131,23 @@ ISR(PCINT0_vect)
         }
     }
 
-    start_pwm();
     sei();
 }
 
 
 void init(void)
 {
-    // disable adc and analog comparator
+    // don't need adc or analog comparator
     power_adc_disable();
     ADCSRA &= ~(1<<ADEN);
     ACSR |= (1<<ACD);
 
-    // PB0: PWM
-    // PB3, PB2, PB1: LED address
     // PB4: switch
+    // PB3, PB2, PB1: LED address
+    // PB0: PWM
     DDRB = (0<<PB4) | (1<<PB3) | (1<<PB2) | (1<<PB1) | (1<<PB0);
     PORTB = 0;
 
-    // enable pc interrupt on pin 4
     GIMSK = (1<<PCIE);
     PCMSK = (1<<PCINT4);
 
