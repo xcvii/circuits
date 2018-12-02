@@ -6,7 +6,6 @@
 
 ARCH  = attiny13a
 MCU   = attiny13
-# F_CPU = 1000000UL
 F_CPU = 128000UL
 BAUD  = 9600UL
 
