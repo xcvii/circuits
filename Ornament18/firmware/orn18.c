@@ -186,6 +186,8 @@ int main(void)
     uint8_t current_led = 0;
     uint8_t random = 0;
 
+    uint8_t hold_count = 0;
+
     for (;;)
     {
         while(g_running)
@@ -224,6 +226,27 @@ int main(void)
             stop_pwm();
 
             sleep();
+
+            // easter egg!
+            if (!(PINB & (1<<PB4)))
+            {
+                if (17 <= ++hold_count)
+                {
+                    uint8_t led_order[] = {1,0,2,3,4,5,6};
+                    for (uint16_t i = 0; g_running && i < 4200; ++i)
+                    {
+                        current_led = led_order[i % 7];
+                        PORTB = LED_ADDRESS[current_led] | (1<<PB0);
+                        _delay_ms(75);
+                    }
+
+                    PORTB = 0;
+                }
+            }
+            else
+            {
+                hold_count = 0;
+            }
         }
 
         shutdown();
