@@ -87,7 +87,6 @@ void sleep(void)
 void wakeup(void)
 {
     sleep_disable();
-
     wdt_reset();
     WDTCR = (1<<WDCE) | (0<<WDTIE); // stopped
 }
@@ -117,21 +116,21 @@ bool is_pressed(void)
 
 ISR(PCINT0_vect)
 {
-    cli();
-
     if (is_pressed())
     {
-        if ((g_running = !g_running))
+        g_running = !g_running;
+
+        if (g_running)
         {
             wakeup();
+            start_pwm();
         }
         else
         {
+            stop_pwm();
             PORTB = 0;
         }
     }
-
-    sei();
 }
 
 
@@ -139,8 +138,8 @@ void init(void)
 {
     // don't need adc or analog comparator
     power_adc_disable();
-    ADCSRA &= ~(1<<ADEN);
-    ACSR |= (1<<ACD);
+    ADCSRA = 0;
+    ACSR = (1<<ACD);
 
     // PB4: switch
     // PB3, PB2, PB1: LED address
@@ -181,17 +180,18 @@ void delay(void)
 
 int main(void)
 {
-    init();
-
     uint8_t current_led = 0;
     uint8_t random = 0;
-
     uint8_t hold_count = 0;
 
     for (;;)
     {
+        init();
+
         while(g_running)
         {
+            PORTB = LED_ADDRESS[current_led];
+
             uint8_t next_led = 0;
             do
             {
@@ -201,7 +201,6 @@ int main(void)
             while (current_led == next_led);
 
             current_led = next_led;
-            PORTB = LED_ADDRESS[current_led];
 
             start_pwm();
 
