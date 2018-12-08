@@ -101,9 +101,11 @@ $(TARGET).elf: $(OBJECTS)
 	$(OBJDUMP) -S $< > $@
 
 ## These targets don't have files named after them
-.PHONY: all disassemble disasm eeprom size clean squeaky_clean flash fuses
+.PHONY: all disassemble disasm eeprom size clean squeaky_clean flash fuses burn
 
 all: $(TARGET).hex
+
+burn: flash fuses
 
 debug:
 	@echo
